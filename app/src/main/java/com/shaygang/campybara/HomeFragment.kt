@@ -37,6 +37,8 @@ class HomeFragment : Fragment() {
     lateinit var imageId : Array<Int>
     lateinit var names : Array<String>
     private var campsiteList : ArrayList<Campsite> = arrayListOf()
+    private lateinit var campsiteIdArrayList: ArrayList<String>
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,7 +65,7 @@ class HomeFragment : Fragment() {
         recyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = layoutManager
         recyclerView.setHasFixedSize(true)
-        adapter = CampsiteAdapter(campsiteMap, campsiteList, requireContext())
+        adapter = CampsiteAdapter(campsiteIdArrayList, campsiteList, requireContext())
         recyclerView.adapter = adapter
     }
 
@@ -89,19 +91,20 @@ class HomeFragment : Fragment() {
     }
 
     private fun campsiteInitialize() {
-        campsiteMap = mutableMapOf()
+        campsiteIdArrayList = arrayListOf()
         databaseRef.addValueEventListener(object : ValueEventListener {
             @SuppressLint("NotifyDataSetChanged")
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 // Get all children of myRef
                 for (childSnapshot in dataSnapshot.children) {
+                    val campsiteId = childSnapshot.key!!
                     val imageUrl = childSnapshot.child("imageUrl").value.toString()
                     val campsiteName = childSnapshot.child("name").value.toString()
                     val ownerUid = childSnapshot.child("ownerUID").value.toString()
+                    campsiteIdArrayList.add(campsiteId)
                     val campsite = Campsite(campsiteName, " ",-1,imageUrl,3.5,ownerUid)
                     Log.d("DB", campsite.name)
                     campsiteList.add(campsite)
-                    campsiteMap[campsite] = childSnapshot.key.toString()
                     // Do something with the child key and value
                 }
                 adapter.notifyDataSetChanged()
