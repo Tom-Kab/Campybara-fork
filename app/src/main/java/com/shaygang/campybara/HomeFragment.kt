@@ -24,8 +24,6 @@ class HomeFragment : Fragment() {
     private var campsiteList : ArrayList<Campsite> = arrayListOf()
     private lateinit var campsiteIdArrayList: ArrayList<String>
 
-    private lateinit var campsiteMap : MutableMap<Campsite,String>
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,6 +63,7 @@ class HomeFragment : Fragment() {
                     val imageUrl = childSnapshot.child("imageUrl").value.toString()
                     val campsiteName = childSnapshot.child("name").value.toString()
                     val ownerUid = childSnapshot.child("ownerUID").value.toString()
+                    val campsite = Campsite(campsiteName, " ",-1,imageUrl,3.5,ownerUid)
                     campsiteIdArrayList.add(campsiteId)
                     val locationLat = childSnapshot.child("location").child("latitude").value as Double
                     val locationLng = childSnapshot.child("location").child("longitude").value  as Double
