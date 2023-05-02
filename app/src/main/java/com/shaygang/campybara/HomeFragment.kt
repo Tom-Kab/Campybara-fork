@@ -26,6 +26,7 @@ class HomeFragment : Fragment() {
 
     private lateinit var campsiteMap : MutableMap<Campsite,String>
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         firebaseDatabase = FirebaseDatabase.getInstance()
@@ -71,10 +72,8 @@ class HomeFragment : Fragment() {
                     val location = ArrayList<Double>()
                     location.add(locationLat)
                     location.add(locationLng)
-                    val campsite = Campsite(campsiteName, " ",-1,imageUrl,3.5,ownerUid, location)
                     Log.d("DB", campsite.name)
                     campsiteList.add(campsite)
-                    campsiteMap[campsite] = childSnapshot.key.toString()
                     // Do something with the child key and value
                 }
                 adapter.notifyDataSetChanged()

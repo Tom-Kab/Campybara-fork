@@ -1,6 +1,5 @@
 package com.shaygang.campybara
 
-class Campsite(val name: String, val description: String? = "No description provided", val capacity: Int? = -1, val imageUrl: String?, val rating: Double? = 0.0, val ownerUID: String, val location: ArrayList<Double>) {}
 import android.content.ContentValues.TAG
 import android.util.Log
 import com.google.firebase.database.DataSnapshot
