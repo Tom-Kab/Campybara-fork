@@ -22,6 +22,8 @@ class HomeFragment : Fragment() {
     private lateinit var adapter: CampsiteAdapter
     private lateinit var recyclerView: RecyclerView
     private var campsiteList : ArrayList<Campsite> = arrayListOf()
+    private lateinit var campsiteIdArrayList: ArrayList<String>
+
     private lateinit var campsiteMap : MutableMap<Campsite,String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,22 +49,24 @@ class HomeFragment : Fragment() {
         recyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = layoutManager
         recyclerView.setHasFixedSize(true)
-        adapter = CampsiteAdapter(campsiteMap, campsiteList, requireContext())
+        adapter = CampsiteAdapter(campsiteIdArrayList, campsiteList, requireContext())
         recyclerView.adapter = adapter
     }
 
     private fun campsiteInitialize() {
-        campsiteMap = mutableMapOf()
+        campsiteIdArrayList = arrayListOf()
         databaseRef.addValueEventListener(object : ValueEventListener {
             @SuppressLint("NotifyDataSetChanged")
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 // Get all children of myRef
                 for (childSnapshot in dataSnapshot.children) {
+                    val campsiteId = childSnapshot.key!!
                     val imageUrl = childSnapshot.child("imageUrl").value.toString()
                     val campsiteName = childSnapshot.child("name").value.toString()
                     val ownerUid = childSnapshot.child("ownerUID").value.toString()
-                    val locationLat = childSnapshot.child("location").child("0").value as Double
-                    val locationLng = childSnapshot.child("location").child("1").value  as Double
+                    campsiteIdArrayList.add(campsiteId)
+                    val locationLat = childSnapshot.child("location").child("latitude").value as Double
+                    val locationLng = childSnapshot.child("location").child("longitude").value  as Double
                     val location = ArrayList<Double>()
                     location.add(locationLat)
                     location.add(locationLng)
