@@ -11,9 +11,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import android.widget.Toast
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.firebase.database.*
 
 class HomeFragment : Fragment() {
@@ -23,6 +25,7 @@ class HomeFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private var campsiteList : ArrayList<Campsite> = arrayListOf()
     private lateinit var campsiteMap : MutableMap<Campsite,String>
+    private lateinit var shimmerFrameLayout : ShimmerFrameLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,11 +47,14 @@ class HomeFragment : Fragment() {
         campsiteList.clear()
         campsiteInitialize()
         val layoutManager = LinearLayoutManager(context)
+        val shimmerFrameLayoutManager = ShimmerFrameLayout(context)
         recyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = layoutManager
         recyclerView.setHasFixedSize(true)
         adapter = CampsiteAdapter(campsiteMap, campsiteList, requireContext())
         recyclerView.adapter = adapter
+        shimmerFrameLayout = view.findViewById(R.id.shimmerFrameLayout);
+        shimmerFrameLayout.startShimmer();
     }
 
     private fun campsiteInitialize() {
@@ -57,6 +63,9 @@ class HomeFragment : Fragment() {
             @SuppressLint("NotifyDataSetChanged")
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 // Get all children of myRef
+                shimmerFrameLayout.stopShimmer()
+                shimmerFrameLayout.visibility = View.GONE
+                recyclerView.visibility = View.VISIBLE
                 for (childSnapshot in dataSnapshot.children) {
                     val imageUrl = childSnapshot.child("imageUrl").value.toString()
                     val campsiteName = childSnapshot.child("name").value.toString()
@@ -72,12 +81,15 @@ class HomeFragment : Fragment() {
                     campsiteMap[campsite] = childSnapshot.key.toString()
                     // Do something with the child key and value
                 }
+                shimmerFrameLayout.stopShimmer()
+                shimmerFrameLayout.visibility = View.GONE
+                recyclerView.visibility = View.VISIBLE
                 adapter.notifyDataSetChanged()
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // Handle any errors here
-            }
+                shimmerFrameLayout.visibility = View.GONE
+                Toast.makeText(context, "Something Went Wrong", Toast.LENGTH_LONG).show()            }
         })
     }
 }
