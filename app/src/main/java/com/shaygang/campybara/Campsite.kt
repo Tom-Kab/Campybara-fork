@@ -9,7 +9,7 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import java.util.concurrent.CountDownLatch
 
-class Campsite(val name: String, val description: String? = "No description provided", val capacity: Int? = -1, val imageUrl: String?, val rating: Double? = 0.0, val ownerUID: String) {}
+class Campsite(val name: String, val description: String? = "No description provided", val capacity: Int? = -1, val imageUrl: String?, val rating: Double? = 0.0, val ownerUID: String, val location: ArrayList<Double>) {}
 
 fun getCampsiteFromFirebase(campsiteId: String, callback: (campsite: Campsite?) -> Unit) {
     val campsiteRef = Firebase.database.reference.child("campsites").child(campsiteId)
@@ -22,7 +22,8 @@ fun getCampsiteFromFirebase(campsiteId: String, callback: (campsite: Campsite?) 
                 val imageUrl = snapshot.child("imageUrl").value as String?
                 val rating = snapshot.child("rating").value as Double?
                 val ownerUID = snapshot.child("ownerUID").value as String
-                val campsite = Campsite(name, description, capacity?.toInt(), imageUrl, rating, ownerUID)
+                val location = snapshot.child("location").value as ArrayList<Double>
+                val campsite = Campsite(name, description, capacity?.toInt(), imageUrl, rating, ownerUID, location)
                 callback(campsite)
             } else {
                 callback(null)
