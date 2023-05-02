@@ -124,6 +124,7 @@ class SearchFragment : Fragment() {
 //              campsiteArrayList.clear()
                 // Get all children of myRef
                 for (childSnapshot in dataSnapshot.children) {
+                    val campsiteId = childSnapshot.key!!
                     val campsiteName = childSnapshot.child("name").value.toString()
                     val campsiteImageUrl = childSnapshot.child("imageUrl").value.toString()
                     // TODO: Refactor for temporary values
