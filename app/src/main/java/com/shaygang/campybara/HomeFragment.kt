@@ -63,9 +63,14 @@ class HomeFragment : Fragment() {
                     val imageUrl = childSnapshot.child("imageUrl").value.toString()
                     val campsiteName = childSnapshot.child("name").value.toString()
                     val ownerUid = childSnapshot.child("ownerUID").value.toString()
+<<<<<<< HEAD
                     campsiteIdArrayList.add(campsiteId)
                     val locationLat = childSnapshot.child("location").child("latitude").value as Double
                     val locationLng = childSnapshot.child("location").child("longitude").value  as Double
+=======
+                    val locationLat = childSnapshot.child("location").child("0").value as Double
+                    val locationLng = childSnapshot.child("location").child("1").value  as Double
+>>>>>>> upstream/main
                     val location = ArrayList<Double>()
                     val campsite = Campsite(campsiteName, " ",-1,imageUrl,3.5,ownerUid, location)
                     location.add(locationLat)
