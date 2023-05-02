@@ -10,7 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
-class CampsiteAdapter(private val campsiteIdArrayList: ArrayList<String>, private val campsiteList : ArrayList<Campsite>, val context: Context) : RecyclerView.Adapter<CampsiteAdapter.CampsiteViewHolder>() {
+class CampsiteAdapter(private val campsiteMap: Map<Campsite,String>, private val campsiteList : ArrayList<Campsite>, val context: Context) : RecyclerView.Adapter<CampsiteAdapter.CampsiteViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CampsiteViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.list_item, parent,false)
@@ -30,7 +30,7 @@ class CampsiteAdapter(private val campsiteIdArrayList: ArrayList<String>, privat
             intent.putExtra("campsiteName", currentItem.name)
             intent.putExtra("imageUrl", currentItem.imageUrl)
             intent.putExtra("ownerUid", currentItem.ownerUID)
-            intent.putExtra("campsiteId", campsiteIdArrayList[position])
+            intent.putExtra("campsiteId", campsiteMap[currentItem])
             intent.putExtra("campsiteLocation", currentItem.location)
             context.startActivity(intent)
         }
