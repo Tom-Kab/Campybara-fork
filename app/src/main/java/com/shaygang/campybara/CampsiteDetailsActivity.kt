@@ -11,6 +11,7 @@ import android.view.MenuItem
 import android.view.Window
 import android.widget.Button
 import android.widget.CalendarView
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.RatingBar
 import android.widget.TextView
@@ -45,7 +46,7 @@ class CampsiteDetailsActivity : AppCompatActivity() {
     private lateinit var campsiteLocation: ArrayList<Double>
     private lateinit var fragment: CampsiteDetailsMapsFragment
     private lateinit var geocoder: Geocoder
-
+    private lateinit var groupId : String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_campsite_details)
@@ -62,6 +63,7 @@ class CampsiteDetailsActivity : AppCompatActivity() {
         titleTextView.text = campsiteName
         loadOwner()
         loadReviews()
+        groupId = "testGroup"
         binding.ratingLayout.setOnClickListener {
             val intent = Intent(this, ReviewActivity::class.java)
             intent.putExtra("campsiteId", campsiteId)
@@ -99,6 +101,7 @@ class CampsiteDetailsActivity : AppCompatActivity() {
     private fun reserveCampsiteDialog() {
         val dialog = Dialog(this)
         var calendarView : CalendarView
+        var visitors : Int = 0
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setCancelable(false)
         dialog.setContentView(R.layout.reservation_dialog_group)
@@ -107,22 +110,48 @@ class CampsiteDetailsActivity : AppCompatActivity() {
             dialog.dismiss()
         }
         dialog.findViewById<Button>(R.id.resDialogGroupNext).setOnClickListener {
+            visitors = dialog.findViewById<EditText>(R.id.resDialogGroupVisitors).text.toString().toInt()
             dialog.setContentView(R.layout.reservation_dialog_date)
             dialog.findViewById<TextView>(R.id.resDialogDateTxt).text = "Enter Reservation Start Date"
+            val selectedFromDate = Date()
+            val calendar = Calendar.getInstance()
+            calendar.add(Calendar.DAY_OF_MONTH, 1)
+            val calendarDateSelect = dialog.findViewById<CalendarView>(R.id.resDialogDateSelect)
+            var startDate: Date? = null
+            calendarDateSelect.setOnDateChangeListener { calendarView, year, month, day ->
+                selectedFromDate.time = calendar.timeInMillis
+                startDate = Calendar.getInstance().apply {
+                    set(year, month, day, 0, 0, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.time
+            }
             dialog.findViewById<Button>(R.id.resDialogDateCancel).setOnClickListener {
                 dialog.dismiss()
             }
             dialog.findViewById<Button>(R.id.resDialogDateNext).setOnClickListener {
-                calendarView = dialog.findViewById(R.id.resDialogDateSelect)
-                var selectedFromDate : Date  = Date(calendarView.date)
                 dialog.setContentView(R.layout.reservation_dialog_date)
+                calendarView = dialog.findViewById<CalendarView>(R.id.resDialogDateSelect)
                 dialog.findViewById<TextView>(R.id.resDialogDateTxt).text = "Enter Reservation End Date"
+                val minDate = Calendar.getInstance().apply {
+                    time = startDate
+                    add(Calendar.DAY_OF_MONTH, 1)
+                }.timeInMillis
+                val maxDate = Calendar.getInstance().apply {
+                    time = startDate
+                    add(Calendar.DAY_OF_MONTH, 14)
+                }.timeInMillis
+                calendarView.minDate = minDate
+                calendarView.maxDate = maxDate
                 dialog.findViewById<Button>(R.id.resDialogDateCancel).setOnClickListener {
                     dialog.dismiss()
                 }
+                var selectedToDate : Date = Date()
+                dialog.findViewById<CalendarView>(R.id.resDialogDateSelect).setOnDateChangeListener { calendarView, year, month, day ->
+                    val calendar = Calendar.getInstance()
+                    calendar.set(year,month,day)
+                    selectedToDate.time = calendar.timeInMillis
+                }
                 dialog.findViewById<Button>(R.id.resDialogDateNext).setOnClickListener {
-                    calendarView = dialog.findViewById<CalendarView>(R.id.resDialogDateSelect)
-                    var selectedToDate : Date = Date()
                     dialog.setContentView(R.layout.reservation_dialog_confirmation)
                     dialog.findViewById<TextView>(R.id.resDialogConfirmFromDate).text = selectedFromDate.toString()
                     dialog.findViewById<TextView>(R.id.resDialogConfirmToDate).text = selectedToDate.toString()
@@ -130,8 +159,20 @@ class CampsiteDetailsActivity : AppCompatActivity() {
                         dialog.dismiss()
                     }
                     dialog.findViewById<Button>(R.id.resDialogConfirmFinish).setOnClickListener {
+                        val request = ReservationRequest(
+                            campsiteId,
+                            campsiteOwnerUid,
+                            FirebaseAuth.getInstance().currentUser!!.uid,
+                            groupId,
+                            selectedFromDate,
+                            selectedToDate,
+                            visitors
+                        )
+                        val ref = FirebaseDatabase.getInstance().getReference("campsites/$campsiteId/reservationRequests")
+                        ref.push().setValue(request).addOnSuccessListener {
                         Toast.makeText(this,"Successfully sent reservation!",Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
+                        }
                     }
                 }
             }
