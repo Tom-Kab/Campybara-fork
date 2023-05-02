@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.SearchView
 import com.google.firebase.database.*
+import kotlinx.coroutines.selects.select
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -32,6 +33,7 @@ class SearchFragment : Fragment() {
     private lateinit var searchView: SearchView
     lateinit var campsiteNameList: ArrayList<String>
     private lateinit var campsiteArrayList : ArrayList<Campsite>
+    private lateinit var campsiteIdArrayList: ArrayList<String>
     //private lateinit var adapter: CampsiteAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -109,6 +111,7 @@ class SearchFragment : Fragment() {
             intent.putExtra("campsiteName", selectedCampsite.name)
             intent.putExtra("imageUrl", selectedCampsite.imageUrl)
             intent.putExtra("ownerUid", selectedCampsite.ownerUID)
+            intent.putExtra("campsiteId", campsiteIdArrayList[position])
             context?.startActivity(intent)
         }
     }
@@ -121,6 +124,7 @@ class SearchFragment : Fragment() {
 //              campsiteArrayList.clear()
                 // Get all children of myRef
                 for (childSnapshot in dataSnapshot.children) {
+                    val campsiteId = childSnapshot.key!!
                     val campsiteName = childSnapshot.child("name").value.toString()
                     val campsiteImageUrl = childSnapshot.child("imageUrl").value.toString()
                     // TODO: Refactor for temporary values

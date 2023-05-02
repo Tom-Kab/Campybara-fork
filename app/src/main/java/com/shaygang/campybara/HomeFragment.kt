@@ -59,6 +59,7 @@ class HomeFragment : Fragment() {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 // Get all children of myRef
                 for (childSnapshot in dataSnapshot.children) {
+                    val campsiteId = childSnapshot.key!!
                     val imageUrl = childSnapshot.child("imageUrl").value.toString()
                     val campsiteName = childSnapshot.child("name").value.toString()
                     val ownerUid = childSnapshot.child("ownerUID").value.toString()
@@ -67,8 +68,10 @@ class HomeFragment : Fragment() {
                     val location = ArrayList<Double>()
                     location.add(locationLat)
                     location.add(locationLng)
+                    val campsite = Campsite(campsiteName, " ",-1,imageUrl,3.5,ownerUid, location)
                     Log.d("DB", campsite.name)
                     campsiteList.add(campsite)
+                    campsiteMap[campsite] = childSnapshot.key.toString()
                     // Do something with the child key and value
                 }
                 adapter.notifyDataSetChanged()
