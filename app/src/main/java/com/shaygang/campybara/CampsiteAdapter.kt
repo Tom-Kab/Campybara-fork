@@ -9,35 +9,51 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.facebook.shimmer.ShimmerFrameLayout
 
-class CampsiteAdapter(private val campsiteMap: Map<Campsite,String>, private val campsiteList : ArrayList<Campsite>, val context: Context) : RecyclerView.Adapter<CampsiteAdapter.CampsiteViewHolder>() {
+class CampsiteAdapter(private val campsiteMap: Map<Campsite,String>, private var campsiteList : ArrayList<Campsite>, val context: Context) : RecyclerView.Adapter<CampsiteAdapter.CampsiteViewHolder>() {
+
+    private var isShimmerVisible = true // boolean to track if shimmer should be visible or not
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CampsiteViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.list_item, parent,false)
-        return CampsiteViewHolder(itemView)
+        val shimmerFrameLayout = parent.findViewById<ShimmerFrameLayout>(R.id.shimmerFrameLayout)
+        return CampsiteViewHolder(itemView, shimmerFrameLayout)
     }
 
     override fun getItemCount(): Int {
-        return campsiteList.size
+        return if (isShimmerVisible) 5 else campsiteList.size
     }
 
     override fun onBindViewHolder(holder: CampsiteViewHolder, position: Int) {
-        val currentItem = campsiteList[position]
-        Glide.with(holder.itemView).load(currentItem.imageUrl.toString()).placeholder(R.drawable.capy_loading_image).into(holder.campsiteImage)
-        holder.campsiteName.text = currentItem.name
-        holder.itemView.setOnClickListener {
-            val intent = Intent(context, CampsiteDetailsActivity::class.java)
-            intent.putExtra("campsiteName", currentItem.name)
-            intent.putExtra("imageUrl", currentItem.imageUrl)
-            intent.putExtra("ownerUid", currentItem.ownerUID)
-            intent.putExtra("campsiteId", campsiteMap[currentItem])
-            intent.putExtra("campsiteLocation", currentItem.location)
-            context.startActivity(intent)
+        if (isShimmerVisible) { // if shimmer should be visible, set the text to empty string and start shimmer animation
+            holder.shimmerLayout.startShimmer()
+        } else {
+            holder.shimmerLayout.stopShimmer()
+            val currentItem = campsiteList[position]
+            Glide.with(holder.itemView).load(currentItem.imageUrl.toString()).placeholder(R.drawable.capy_loading_image).into(holder.campsiteImage)
+            holder.campsiteName.text = currentItem.name
+            holder.itemView.setOnClickListener {
+                val intent = Intent(context, CampsiteDetailsActivity::class.java)
+                intent.putExtra("campsiteName", currentItem.name)
+                intent.putExtra("imageUrl", currentItem.imageUrl)
+                intent.putExtra("ownerUid", currentItem.ownerUID)
+                intent.putExtra("campsiteId", campsiteMap[currentItem])
+                intent.putExtra("campsiteLocation", currentItem.location)
+                context.startActivity(intent)
+            }
         }
     }
 
-    class CampsiteViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView) {
+    fun setData(campsiteList: ArrayList<Campsite>) {
+        isShimmerVisible = false // set shimmer visibility to false
+        this.campsiteList = campsiteList // update data list
+        notifyDataSetChanged() // notify adapter of data change
+    }
+
+    class CampsiteViewHolder(itemView : View, val shimmerFrameLayout: ShimmerFrameLayout) : RecyclerView.ViewHolder(itemView) {
         val campsiteImage : ImageView = itemView.findViewById(R.id.campsiteImage)
         val campsiteName : TextView = itemView.findViewById(R.id.campsiteName)
+        val shimmerLayout: ShimmerFrameLayout = itemView.findViewById(R.id.shimmerFrameLayout)
     }
 }

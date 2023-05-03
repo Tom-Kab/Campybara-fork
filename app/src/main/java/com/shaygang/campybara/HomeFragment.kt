@@ -44,17 +44,16 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        shimmerFrameLayout = view.findViewById(R.id.shimmerFrameLayout)
+        shimmerFrameLayout.startShimmer()
         campsiteList.clear()
         campsiteInitialize()
         val layoutManager = LinearLayoutManager(context)
-        val shimmerFrameLayoutManager = ShimmerFrameLayout(context)
         recyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = layoutManager
         recyclerView.setHasFixedSize(true)
         adapter = CampsiteAdapter(campsiteMap, campsiteList, requireContext())
         recyclerView.adapter = adapter
-        shimmerFrameLayout = view.findViewById(R.id.shimmerFrameLayout);
-        shimmerFrameLayout.startShimmer();
     }
 
     private fun campsiteInitialize() {
@@ -84,7 +83,7 @@ class HomeFragment : Fragment() {
                 shimmerFrameLayout.stopShimmer()
                 shimmerFrameLayout.visibility = View.GONE
                 recyclerView.visibility = View.VISIBLE
-                adapter.notifyDataSetChanged()
+                adapter.setData(campsiteList)
             }
 
             override fun onCancelled(error: DatabaseError) {
