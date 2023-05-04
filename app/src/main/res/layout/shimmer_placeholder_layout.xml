@@ -2,41 +2,43 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="60dp">
+    android:layout_height="wrap_content"
+    android:layout_margin="20dp"
+    android:background="@drawable/rounded_corner"
+    android:foreground="?attr/selectableItemBackground"
+    android:elevation="8dp"
+    android:outlineProvider="bounds"
+    android:paddingBottom="10dp">
 
-    <ImageView
-        android:id="@+id/imageViewAvatar"
-        android:layout_width="60dp"
-        android:layout_height="0dp"
-        android:background="@color/beige"
-        android:padding="4dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <com.shaygang.campybara.RoundedImageView
+        android:id="@+id/campsiteImage"
+        android:layout_width="0dp"
+        android:layout_height="225dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="5dp"
+        android:adjustViewBounds="false"
+        android:scaleType="fitXY"
+        android:background="@drawable/rounded_corner_shimmer"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/textViewUserName"
-        style="@style/TextAppearance.AppCompat.Large"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="4dp"
-        android:background="@color/beige"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/imageViewAvatar"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="MindOrks" />
+        tools:srcCompat="@drawable/capy_loading_image" />
 
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/textViewUserEmail"
+    <TextView
+        android:id="@+id/campsiteName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@color/beige"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/textViewUserName"
-        app:layout_constraintTop_toBottomOf="@+id/textViewUserName"
-        tools:text="MindOrks" />
+        android:layout_marginTop="5dp"
+        android:fontFamily="sans-serif-black"
+        android:textColor="#000000"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:background="@drawable/rounded_corner_shimmer"
+        app:layout_constraintEnd_toEndOf="@+id/campsiteImage"
+        app:layout_constraintStart_toStartOf="@+id/campsiteImage"
+        app:layout_constraintTop_toBottomOf="@+id/campsiteImage" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
