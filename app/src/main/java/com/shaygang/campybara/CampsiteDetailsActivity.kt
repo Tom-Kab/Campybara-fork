@@ -1,6 +1,5 @@
 package com.shaygang.campybara
 
-import android.app.DatePickerDialog
 import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
@@ -8,15 +7,9 @@ import android.graphics.drawable.ColorDrawable
 import android.location.Geocoder
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
 import android.view.Window
-import android.widget.Button
-import android.widget.CalendarView
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.RatingBar
-import android.widget.TextView
-import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
@@ -57,18 +50,25 @@ class CampsiteDetailsActivity : AppCompatActivity() {
         supportActionBar?.title = campsiteName
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeButtonEnabled(true)
+        setFavButton()
         val titleTextView = binding.campsiteName
         Glide.with(this).load(campsiteImageUrl).placeholder(R.drawable.capy_loading_image)
             .into(binding.campsiteImage)
         titleTextView.text = campsiteName
         loadOwner()
         loadReviews()
-        groupId = "testGroup"
         binding.ratingLayout.setOnClickListener {
             val intent = Intent(this, ReviewActivity::class.java)
             intent.putExtra("campsiteId", campsiteId)
             intent.putExtra("campsiteName", campsiteName)
             startActivity(intent)
+        }
+
+        binding.addCampsiteToFavBtn.setOnClickListener {
+            addCampsiteToFavorites()
+        }
+        binding.removeCampsiteFromFavBtn.setOnClickListener {
+            removeCampsiteFromFavorites()
         }
 
         if (campsiteOwnerUid == FirebaseAuth.getInstance().currentUser?.uid || age!! < 18) {
@@ -80,6 +80,56 @@ class CampsiteDetailsActivity : AppCompatActivity() {
         loadMap()
         binding.reserveCampsiteBtn.setOnClickListener {
             reserveCampsiteDialog()
+        }
+    }
+
+    private fun removeCampsiteFromFavorites() {
+        val currentUser = FirebaseAuth.getInstance().currentUser?.uid
+        val ref = FirebaseDatabase.getInstance().getReference("users/$currentUser/favoriteCampsites")
+        ref.child(campsiteId).removeValue().addOnSuccessListener {
+            setFavButton()
+        }
+    }
+
+    private fun setFavButton() {
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+        val databaseRef = FirebaseDatabase.getInstance().getReference("users/$currentUserId/favoriteCampsites")
+        databaseRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    // Iterate over the child nodes of the reference
+                    for (childSnapshot in dataSnapshot.children) {
+                        // Check if the child node has the value campsiteId
+                        if (childSnapshot.key == campsiteId && childSnapshot.value == true) {
+                            // The reference has a child with the value campsiteId
+                            binding.removeCampsiteFromFavBtn.visibility = View.VISIBLE
+                            binding.addCampsiteToFavBtn.visibility = View.INVISIBLE
+                            return
+                        }
+                    }
+                    // The reference doesn't have a child with the value campsiteId
+                    binding.removeCampsiteFromFavBtn.visibility = View.INVISIBLE
+                    binding.addCampsiteToFavBtn.visibility = View.VISIBLE
+                } else {
+                    // The reference doesn't exist or has no children
+                    binding.removeCampsiteFromFavBtn.visibility = View.INVISIBLE
+                    binding.addCampsiteToFavBtn.visibility = View.VISIBLE
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+            }
+        })
+    }
+
+    private fun addCampsiteToFavorites() {
+        val currentUser = FirebaseAuth.getInstance().currentUser?.uid
+        val ref = FirebaseDatabase.getInstance().getReference("users/$currentUser/favoriteCampsites")
+        ref.child(campsiteId).setValue(true).addOnSuccessListener {
+            // Once the object is pushed to the database, display a success message
+            Toast.makeText(this,"Successfully added campsite to favorites!",Toast.LENGTH_SHORT).show()
+            binding.addCampsiteToFavBtn.visibility = View.INVISIBLE
+            binding.removeCampsiteFromFavBtn.visibility = View.VISIBLE
         }
     }
 
@@ -106,43 +156,72 @@ class CampsiteDetailsActivity : AppCompatActivity() {
         dialog.setCancelable(false)
         dialog.setContentView(R.layout.reservation_dialog_group)
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        val spinner = dialog.findViewById<Spinner>(R.id.resDialogGroupSpinner)
+        var groupIdList = arrayListOf<String>()
+        User.getGroupsWhereUserIsLeader(User.getCurrentlyLoggedInUser()) {
+            groupIdList = it
+            val groupNameList = arrayListOf<String>()
+            val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, groupNameList)
+            for (groupId in groupIdList) {
+                Group.getGroupFromId(groupId) {
+                    groupNameList.add(it!!.name)
+                    adapter.notifyDataSetChanged()
+                }
+            }
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spinner.adapter = adapter
+        }
         dialog.findViewById<Button>(R.id.resDialogGroupCancel).setOnClickListener {
+            // Cancel button
             dialog.dismiss()
         }
         dialog.findViewById<Button>(R.id.resDialogGroupNext).setOnClickListener {
+            // User chooses Group and number of visitors to the campsite, moves on to date selection
             visitors = dialog.findViewById<EditText>(R.id.resDialogGroupVisitors).text.toString().toInt()
+            groupId = groupIdList[spinner.selectedItemPosition]
+            val groupName = spinner.selectedItem.toString()
             dialog.setContentView(R.layout.reservation_dialog_date)
             dialog.findViewById<TextView>(R.id.resDialogDateTxt).text = "Enter Reservation Start Date"
             val selectedFromDate = Date()
             val calendar = Calendar.getInstance()
+            // Force the date to be at least the day after the current date
             calendar.add(Calendar.DAY_OF_MONTH, 1)
             val calendarDateSelect = dialog.findViewById<CalendarView>(R.id.resDialogDateSelect)
             var startDate: Date? = null
+            calendarDateSelect.minDate = calendar.timeInMillis
             calendarDateSelect.setOnDateChangeListener { calendarView, year, month, day ->
+                val calendar = Calendar.getInstance()
+                calendar.set(year,month,day)
                 selectedFromDate.time = calendar.timeInMillis
-                startDate = Calendar.getInstance().apply {
-                    set(year, month, day, 0, 0, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }.time
+                startDate = calendar.time
             }
+
             dialog.findViewById<Button>(R.id.resDialogDateCancel).setOnClickListener {
+                // Cancel button
                 dialog.dismiss()
             }
+
             dialog.findViewById<Button>(R.id.resDialogDateNext).setOnClickListener {
+                selectedFromDate.time = calendar.timeInMillis
+                startDate = calendar.time
+                // User selected and confirmed start date,user now selects end date
                 dialog.setContentView(R.layout.reservation_dialog_date)
                 calendarView = dialog.findViewById<CalendarView>(R.id.resDialogDateSelect)
                 dialog.findViewById<TextView>(R.id.resDialogDateTxt).text = "Enter Reservation End Date"
                 val minDate = Calendar.getInstance().apply {
+                    // Minimum endDate is startDate + 1
                     time = startDate
                     add(Calendar.DAY_OF_MONTH, 1)
                 }.timeInMillis
                 val maxDate = Calendar.getInstance().apply {
+                    // Maximum endDate is startDate + 14 (can be added as a campsite setting)
                     time = startDate
                     add(Calendar.DAY_OF_MONTH, 14)
                 }.timeInMillis
                 calendarView.minDate = minDate
                 calendarView.maxDate = maxDate
                 dialog.findViewById<Button>(R.id.resDialogDateCancel).setOnClickListener {
+                    // Cancel button
                     dialog.dismiss()
                 }
                 var selectedToDate : Date = Date()
@@ -152,24 +231,30 @@ class CampsiteDetailsActivity : AppCompatActivity() {
                     selectedToDate.time = calendar.timeInMillis
                 }
                 dialog.findViewById<Button>(R.id.resDialogDateNext).setOnClickListener {
+                    // User confirms end date, now moves on to recap screen
                     dialog.setContentView(R.layout.reservation_dialog_confirmation)
                     dialog.findViewById<TextView>(R.id.resDialogConfirmFromDate).text = selectedFromDate.toString()
                     dialog.findViewById<TextView>(R.id.resDialogConfirmToDate).text = selectedToDate.toString()
+                    dialog.findViewById<TextView>(R.id.resDialogConfirmGrpName).text = groupName
                     dialog.findViewById<Button>(R.id.resDialogConfirmCancel).setOnClickListener {
+                        // Cancel button
                         dialog.dismiss()
                     }
                     dialog.findViewById<Button>(R.id.resDialogConfirmFinish).setOnClickListener {
-                        val request = ReservationRequest(
+                        // User wants to proceed with request
+                        val request = Reservation(
                             campsiteId,
                             campsiteOwnerUid,
                             FirebaseAuth.getInstance().currentUser!!.uid,
                             groupId,
                             selectedFromDate,
                             selectedToDate,
-                            visitors
+                            visitors,
+                            ReservationState.PENDING
                         )
                         val ref = FirebaseDatabase.getInstance().getReference("campsites/$campsiteId/reservationRequests")
                         ref.push().setValue(request).addOnSuccessListener {
+                            // Once the object is pushed to the database, display a success message
                         Toast.makeText(this,"Successfully sent reservation!",Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
                         }

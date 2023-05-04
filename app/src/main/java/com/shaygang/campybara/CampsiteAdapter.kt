@@ -11,8 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.facebook.shimmer.ShimmerFrameLayout
 
-class CampsiteAdapter(private val campsiteMap: Map<Campsite,String>, private var campsiteList : ArrayList<Campsite>, val context: Context) : RecyclerView.Adapter<CampsiteAdapter.CampsiteViewHolder>() {
-
+class CampsiteAdapter(private val campsiteIdList : ArrayList<String>, val context: Context) : RecyclerView.Adapter<CampsiteAdapter.CampsiteViewHolder>() {
     private var isShimmerVisible = true // boolean to track if shimmer should be visible or not
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CampsiteViewHolder {
@@ -21,7 +20,7 @@ class CampsiteAdapter(private val campsiteMap: Map<Campsite,String>, private var
     }
 
     override fun getItemCount(): Int {
-        return if (isShimmerVisible) 5 else campsiteList.size
+        return if (isShimmerVisible) 5 else campsiteIdList.size
     }
 
     override fun onBindViewHolder(holder: CampsiteViewHolder, position: Int) {
@@ -29,25 +28,33 @@ class CampsiteAdapter(private val campsiteMap: Map<Campsite,String>, private var
             holder.shimmerLayout.startShimmer()
             Glide.with(holder.itemView).load("").placeholder(R.drawable.capy_loading_image).into(holder.campsiteImage)
         } else {
-            holder.shimmerLayout.stopShimmer()
-            val currentItem = campsiteList[position]
-            Glide.with(holder.itemView).load(currentItem.imageUrl.toString()).placeholder(R.drawable.capy_loading_image).into(holder.campsiteImage)
-            holder.campsiteName.text = currentItem.name
-            holder.itemView.setOnClickListener {
-                val intent = Intent(context, CampsiteDetailsActivity::class.java)
-                intent.putExtra("campsiteName", currentItem.name)
-                intent.putExtra("imageUrl", currentItem.imageUrl)
-                intent.putExtra("ownerUid", currentItem.ownerUID)
-                intent.putExtra("campsiteId", campsiteMap[currentItem])
-                intent.putExtra("campsiteLocation", currentItem.location)
-                context.startActivity(intent)
-            }
+            var currentItemId = campsiteIdList[position]
+            Campsite.getCampsiteFromId(currentItemId) {
+                val currentItem = it!!
+                Glide.with(holder.itemView).load(currentItem.imageUrl.toString())
+                    .placeholder(R.drawable.capy_loading_image).into(holder.campsiteImage)
+                holder.campsiteName.text = currentItem.name
+                val reviewHelper = ReviewHelper(currentItemId)
+                reviewHelper.populateReviewList {
+                    holder.campsiteRating.text = String.format("%.1f", reviewHelper.calculateAvg())
+                }
+                holder.itemView.setOnClickListener {
+                    val intent = Intent(context, CampsiteDetailsActivity::class.java)
+                    intent.putExtra("campsiteName", currentItem.name)
+                    intent.putExtra("imageUrl", currentItem.imageUrl)
+                    intent.putExtra("ownerUid", currentItem.ownerUID)
+                    intent.putExtra("campsiteId", campsiteMap[currentItem])
+                    intent.putExtra("campsiteLocation", currentItem.location)
+                    context.startActivity(intent)
+                }
+             }
+           }
         }
-    }
+
 
     fun setData(campsiteList: ArrayList<Campsite>) {
         isShimmerVisible = false // set shimmer visibility to false
-        this.campsiteList = campsiteList // update data list
+        this.campsiteIdList = campsiteIdList // update data list
         notifyDataSetChanged() // notify adapter of data change
     }
 
@@ -55,5 +62,6 @@ class CampsiteAdapter(private val campsiteMap: Map<Campsite,String>, private var
         val campsiteImage : ImageView = itemView.findViewById(R.id.campsiteImage)
         val campsiteName : TextView = itemView.findViewById(R.id.campsiteName)
         val shimmerLayout: ShimmerFrameLayout = itemView.findViewById(R.id.shimmerFrameLayout)
+        val campsiteRating : TextView = itemView.findViewById(R.id.itemListRatingScore)
     }
 }

@@ -1,5 +1,6 @@
 package com.shaygang.campybara
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -7,21 +8,16 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.annotation.RequiresApi
-import androidx.core.view.removeItemAt
-import androidx.navigation.findNavController
-import androidx.navigation.ui.setupWithNavController
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
-import java.util.Calendar
-import java.util.Locale
 
 var firstName: String? = null
 var lastName: String? = null
@@ -44,14 +40,41 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
-        val navController = findNavController(R.id.fragmentContainerView)
-        bottomNavigationView.setupWithNavController(navController)
-
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setDisplayShowCustomEnabled(true)
         supportActionBar?.setDisplayShowTitleEnabled(false)
         supportActionBar?.setCustomView(R.layout.actionbar_title)
+
+        val viewPager: ViewPager2 = findViewById(R.id.viewPager)
+        val bottomNav : BottomNavigationView = findViewById(R.id.bottomNavigationView)
+
+        val adapter = ViewPagerAdapter(supportFragmentManager, lifecycle)
+        adapter.addFragment(HomeFragment())
+        adapter.addFragment(ChatFragment())
+        adapter.addFragment(SearchFragment())
+        adapter.addFragment(ReservationsFragment())
+        adapter.addFragment(ProfileFragment())
+
+        viewPager.adapter = adapter
+        viewPager.offscreenPageLimit = 2
+
+        bottomNav.setOnNavigationItemSelectedListener {
+            when (it.itemId) {
+                R.id.homeFragment -> viewPager.currentItem = 0
+                R.id.chatFragment -> viewPager.currentItem = 1
+                R.id.searchFragment -> viewPager.currentItem = 2
+                R.id.reservationsFragment -> viewPager.currentItem = 3
+                R.id.profileFragment -> viewPager.currentItem = 4
+            }
+            true
+        }
+
+        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                bottomNav.menu.getItem(position).isChecked = true
+            }
+        })
 
         user = FirebaseAuth.getInstance().currentUser!!
         databaseRef = FirebaseDatabase.getInstance().getReference("users").child(user.uid)
@@ -74,6 +97,8 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -104,12 +129,30 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menu?.add("Add Admin")
+        menu?.add("Become An Owner")
+        menu?.add("Approve Owners")
         menu?.add("Sign Out")
         return super.onCreateOptionsMenu(menu)
     }
 
+    @SuppressLint("SuspiciousIndentation")
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-//        val addAdminItem = menu.findItem(R.id.)
+        val addAdminItem = menu?.getItem(0)
+        val applyForOwner = menu?.getItem(1)
+        val approveOwners = menu?.getItem(2)
+
+        if (addAdminItem != null && approveOwners != null && isAdmin == false) {
+            addAdminItem.isVisible = false
+            approveOwners.isVisible = false
+        }
+
+        if (applyForOwner != null) {
+            if (isAdmin == true || isOwner == true) {
+                applyForOwner.isVisible = false
+            } else if (age != null && age!! < 18) {
+                applyForOwner.isVisible = false
+            }
+        }
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -118,6 +161,14 @@ class MainActivity : AppCompatActivity() {
         if (item.title == "Add Admin") {
             val addAdminDialog = AddAdminDialog(this)
             addAdminDialog.show()
+        }
+        if (item.title == "Become An Owner") {
+            val applyOwnerDialog = UploadFileDialog(this)
+            applyOwnerDialog.show()
+        }
+        if (item.title == "Approve Owners") {
+            val intent = Intent(this@MainActivity, ApproveOwnersActivity::class.java)
+            startActivity(intent)
         }
         if (item.title == "Sign Out") {
             MaterialAlertDialogBuilder(this)
