@@ -17,8 +17,7 @@ class CampsiteAdapter(private val campsiteMap: Map<Campsite,String>, private var
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CampsiteViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.list_item, parent,false)
-        val shimmerFrameLayout = parent.findViewById<ShimmerFrameLayout>(R.id.shimmerFrameLayout)
-        return CampsiteViewHolder(itemView, shimmerFrameLayout)
+        return CampsiteViewHolder(itemView)
     }
 
     override fun getItemCount(): Int {
@@ -28,6 +27,7 @@ class CampsiteAdapter(private val campsiteMap: Map<Campsite,String>, private var
     override fun onBindViewHolder(holder: CampsiteViewHolder, position: Int) {
         if (isShimmerVisible) { // if shimmer should be visible, set the text to empty string and start shimmer animation
             holder.shimmerLayout.startShimmer()
+            Glide.with(holder.itemView).load("").placeholder(R.drawable.capy_loading_image).into(holder.campsiteImage)
         } else {
             holder.shimmerLayout.stopShimmer()
             val currentItem = campsiteList[position]
@@ -51,7 +51,7 @@ class CampsiteAdapter(private val campsiteMap: Map<Campsite,String>, private var
         notifyDataSetChanged() // notify adapter of data change
     }
 
-    class CampsiteViewHolder(itemView : View, val shimmerFrameLayout: ShimmerFrameLayout) : RecyclerView.ViewHolder(itemView) {
+    class CampsiteViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView) {
         val campsiteImage : ImageView = itemView.findViewById(R.id.campsiteImage)
         val campsiteName : TextView = itemView.findViewById(R.id.campsiteName)
         val shimmerLayout: ShimmerFrameLayout = itemView.findViewById(R.id.shimmerFrameLayout)
