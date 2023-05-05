@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.facebook.shimmer.ShimmerFrameLayout
 
-class CampsiteAdapter(private val campsiteIdList : ArrayList<String>, val context: Context) : RecyclerView.Adapter<CampsiteAdapter.CampsiteViewHolder>() {
+class CampsiteAdapter(private var campsiteIdList : ArrayList<String>, val context: Context) : RecyclerView.Adapter<CampsiteAdapter.CampsiteViewHolder>() {
     private var isShimmerVisible = true // boolean to track if shimmer should be visible or not
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CampsiteViewHolder {
@@ -43,7 +43,7 @@ class CampsiteAdapter(private val campsiteIdList : ArrayList<String>, val contex
                     intent.putExtra("campsiteName", currentItem.name)
                     intent.putExtra("imageUrl", currentItem.imageUrl)
                     intent.putExtra("ownerUid", currentItem.ownerUID)
-                    intent.putExtra("campsiteId", campsiteMap[currentItem])
+                    intent.putExtra("campsiteId", currentItemId)
                     intent.putExtra("campsiteLocation", currentItem.location)
                     context.startActivity(intent)
                 }
@@ -52,7 +52,7 @@ class CampsiteAdapter(private val campsiteIdList : ArrayList<String>, val contex
         }
 
 
-    fun setData(campsiteList: ArrayList<Campsite>) {
+    fun setData(campsiteIdList: ArrayList<String>) {
         isShimmerVisible = false // set shimmer visibility to false
         this.campsiteIdList = campsiteIdList // update data list
         notifyDataSetChanged() // notify adapter of data change

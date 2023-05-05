@@ -46,7 +46,7 @@
         tools:listitem="@layout/list_item">
 
     </com.facebook.shimmer.ShimmerFrameLayout>
-        
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/listItemRating"
             android:layout_width="0dp"

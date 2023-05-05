@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="20dp"
-    android:background="@drawable/rounded_corner"
+    android:background="@drawable/rounded_corner_10dp"
     android:foreground="?attr/selectableItemBackground"
     android:elevation="8dp"
     android:outlineProvider="bounds"

@@ -43,9 +43,9 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         shimmerFrameLayout = view.findViewById(R.id.shimmerFrameLayout)
         shimmerFrameLayout.startShimmer()
-        campsiteInitialize()
         val layoutManager = LinearLayoutManager(context)
         recyclerView = view.findViewById(R.id.recyclerView)
+        campsiteInitialize()
         recyclerView.layoutManager = layoutManager
         recyclerView.setHasFixedSize(true)
         adapter = CampsiteAdapter(campsiteIdList, requireContext())
