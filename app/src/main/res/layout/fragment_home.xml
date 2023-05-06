@@ -7,35 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".HomeFragment">
 
-    <com.facebook.shimmer.ShimmerFrameLayout
-        android:id="@+id/shimmerFrameLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:shimmer_repeat_mode="restart"
-        app:shimmer_shape="radial"
-        android:layout_gravity="center"
-        android:orientation="vertical"
-        tools:listitem="@layout/list_item">
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_gravity="center">
-
-            <include layout="@layout/shimmer_placeholder_layout"></include>
-
-            <include layout="@layout/shimmer_placeholder_layout"></include>
-
-            <include layout="@layout/shimmer_placeholder_layout"></include>
-
-            <include layout="@layout/shimmer_placeholder_layout"></include>
-
-            <include layout="@layout/shimmer_placeholder_layout"></include>
-        </FrameLayout>
-
-    </com.facebook.shimmer.ShimmerFrameLayout>
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"

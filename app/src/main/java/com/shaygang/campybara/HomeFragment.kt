@@ -27,7 +27,7 @@ class HomeFragment : Fragment() {
     private var campsiteIdList : ArrayList<String> = arrayListOf()
     private lateinit var viewPager: ViewPager2
     private lateinit var pagerAdapter: FragmentStateAdapter
-    private lateinit var shimmerFrameLayout : ShimmerFrameLayout
+//    private lateinit var shimmerFrameLayout : ShimmerFrameLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,8 +41,8 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        shimmerFrameLayout = view.findViewById(R.id.shimmerFrameLayout)
-        shimmerFrameLayout.startShimmer()
+//        shimmerFrameLayout = view.findViewById(R.id.shimmerFrameLayout)
+//        shimmerFrameLayout.startShimmer()
         val layoutManager = LinearLayoutManager(context)
         recyclerView = view.findViewById(R.id.recyclerView)
         campsiteInitialize()
@@ -53,8 +53,8 @@ class HomeFragment : Fragment() {
     }
 
     private fun campsiteInitialize() {
-        shimmerFrameLayout.stopShimmer()
-        shimmerFrameLayout.visibility = View.GONE
+//        shimmerFrameLayout.stopShimmer()
+//        shimmerFrameLayout.visibility = View.GONE
         recyclerView.visibility = View.VISIBLE
         Campsite.getCampsiteIds(campsiteIdList) {
             adapter.notifyDataSetChanged()
